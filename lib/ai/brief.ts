@@ -33,8 +33,9 @@ export type BriefResult = {
 
 /**
  * The site is the strongest brand signal we have, so its measured colours and
- * type win over the model's guess. The screenshot becomes real scene imagery:
- * a dimmed backdrop on the opener and a photo slot in the first media beat.
+ * type win over the model's guess. The screenshot only fills a split media
+ * plate: as a full-bleed backdrop a page turns into cropped noise, and on the
+ * hook it fights the headline.
  */
 export function applySiteLook(
   spec: VideoSpec,
@@ -48,15 +49,11 @@ export function applySiteLook(
   const free = spec.scenes.filter((scene) => !scene.imageAssetId);
   if (!free.length) return;
 
-  // A website is a UI screenshot: it belongs in a real media panel. Using it as
-  // a full-bleed hook backdrop just crops the page into noise, especially 9:16.
-  const media = free.filter((scene) => scene.layout === "fullBleed" || scene.layout === "split");
-  const targets = media.length ? media.slice(0, 2) : free.slice(0, 1);
+  const plate = free.find((scene) => scene.layout === "split");
+  if (!plate) return;
 
-  for (const scene of targets) {
-    scene.imageAssetId = screenshotAssetId;
-    scene.imageTreatment = "dim";
-  }
+  plate.imageAssetId = screenshotAssetId;
+  plate.imageTreatment = "none";
 }
 
 export async function specFromBrief(options: {

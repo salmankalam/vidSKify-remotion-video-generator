@@ -3,7 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { ensureBrowser, openBrowser } from "@remotion/renderer";
 import { assertPublicUrl } from "./website";
-import type { Palette } from "../spec";
+import type { Aspect, Palette } from "../spec";
 
 /**
  * Captures a real page — copy, palette, type and a screenshot — with the Chrome
@@ -19,14 +19,12 @@ export type SiteCapture = {
   url: string;
   title: string;
   description: string;
-  headline: string;
   text: string;
   palette: Palette;
   fontDisplay: string;
   fontBody: string;
   width: number;
   height: number;
-  capturedAt: string;
   screenshot: Buffer;
 };
 
@@ -328,7 +326,6 @@ const EXTRACT_SCRIPT = String.raw`(() => {
   return {
     title: document.title.trim().slice(0, 160),
     description: (metaContent('meta[name="description"]') || metaContent('meta[property="og:description"]')).slice(0, 400),
-    headline: (heading ? heading.textContent || "" : "").replace(/\s+/g, " ").trim().slice(0, 180),
     text: blocks.join("\n").slice(0, 6000),
     palette: palette,
     fontDisplay: firstFamily(getComputedStyle(heading || document.body).fontFamily),
@@ -372,7 +369,6 @@ async function captureWithBrowser(
     const intel = (await page.evaluate(EXTRACT_SCRIPT as never)) as {
       title: string;
       description: string;
-      headline: string;
       text: string;
       palette: Palette;
       fontDisplay: string;
@@ -393,14 +389,12 @@ async function captureWithBrowser(
       url: finalUrl.toString(),
       title: intel.title || finalUrl.hostname,
       description: intel.description || "",
-      headline: intel.headline || "",
       text: intel.text || "",
       palette: intel.palette,
       fontDisplay: intel.fontDisplay,
       fontBody: intel.fontBody,
       width: viewport.width,
       height: viewport.height,
-      capturedAt: new Date().toISOString(),
       screenshot: Buffer.from(shot.value.data, "base64"),
     };
 
@@ -412,6 +406,6 @@ async function captureWithBrowser(
   }
 }
 
-export async function captureWebsite(url: string, options: { refresh?: boolean; aspect?: string } = {}) {
+export async function captureWebsite(url: string, options: { refresh?: boolean; aspect?: Aspect } = {}) {
   return captureWithBrowser(url, Boolean(options.refresh), viewportFor(options.aspect ?? "16:9"));
 }

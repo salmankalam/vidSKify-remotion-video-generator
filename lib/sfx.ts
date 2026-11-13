@@ -4,8 +4,7 @@
  * and reused by every video instead of being re-rendered per project.
  */
 
-export const CONCRETE_SFX_PACKS = ["soft", "cinematic", "minimal", "playful"] as const;
-export type ConcreteSfxPack = (typeof CONCRETE_SFX_PACKS)[number];
+import { CONCRETE_SFX_PACKS, type ConcreteSfxPack } from "./spec";
 
 export const SFX_TRANSITIONS = ["fade", "slide", "wipe"] as const;
 export type SfxTransition = (typeof SFX_TRANSITIONS)[number];
@@ -142,33 +141,6 @@ export function renderSfxPcm(pack: ConcreteSfxPack, transition: SfxTransition): 
 
 export function renderSfxWav(pack: ConcreteSfxPack, transition: SfxTransition): Buffer {
   return wrapWav(renderSfxPcm(pack, transition), SFX_SAMPLE_RATE, 1, 16);
-}
-
-/**
- * Legacy single whoosh, still used by the render worker when the library cannot
- * be built (read-only disk, for example). New work should use the library.
- */
-export function makeWhooshWav(durationSeconds = 0.55, sampleRate = 44100): Buffer {
-  const frames = Math.floor(durationSeconds * sampleRate);
-  const data = Buffer.alloc(frames * 2);
-  const random = mulberry32(1337);
-  let lp = 0;
-  let lp2 = 0;
-
-  for (let i = 0; i < frames; i++) {
-    const t = i / frames;
-    const noise = random() * 2 - 1;
-    const cutoff = 0.04 + 0.35 * Math.pow(t, 1.6);
-    lp = lp + cutoff * (noise - lp);
-    lp2 = lp2 + cutoff * (lp - lp2);
-    const band = lp - lp2;
-    const envelope = Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.05)), 1.5) * Math.pow(1 - t, 0.6);
-    const tone = Math.sin(2 * Math.PI * (520 - 260 * t) * (i / sampleRate)) * 0.05;
-    const sample = Math.max(-1, Math.min(1, band * 2.4 * envelope + tone * envelope));
-    data.writeInt16LE(Math.round(sample * 32767), i * 2);
-  }
-
-  return wrapWav(data, sampleRate, 1, 16);
 }
 
 /** Wrap raw interleaved PCM in a RIFF/WAVE container. */

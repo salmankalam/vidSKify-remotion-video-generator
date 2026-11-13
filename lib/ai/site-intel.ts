@@ -1,5 +1,5 @@
 import { fontPairFor, summarizeWebsite, type WebsiteSummary } from "./website";
-import type { FontPair, Palette } from "../spec";
+import type { Aspect, FontPair, Palette } from "../spec";
 
 /**
  * Next-side client for the worker's browser capture. If the worker is offline
@@ -33,9 +33,9 @@ function validPalette(value: any): value is Palette {
 
 export async function analyzeWebsite(
   url: string,
-  options: { refresh?: boolean; aspect?: string } = {},
+  options: { refresh?: boolean; aspect?: Aspect } = {},
 ): Promise<SiteAnalysis> {
-  const aspect = options.aspect === "9:16" ? "9:16" : "16:9";
+  const aspect: Aspect = options.aspect === "9:16" ? "9:16" : "16:9";
   try {
     const response = await fetch(`${WORKER}/capture`, {
       method: "POST",

@@ -1,12 +1,11 @@
 import { promises as fs, existsSync } from "node:fs";
 import path from "node:path";
+import { CONCRETE_SFX_PACKS, type ConcreteSfxPack } from "./spec";
 import {
-  CONCRETE_SFX_PACKS,
   SFX_SAMPLE_RATE,
   SFX_TRANSITIONS,
   renderSfxWav,
   wavDurationSeconds,
-  type ConcreteSfxPack,
   type SfxTransition,
 } from "./sfx";
 

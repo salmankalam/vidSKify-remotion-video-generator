@@ -139,7 +139,7 @@ app.post("/capture", async (req, res) => {
   try {
     const capture = await captureWebsite(url, {
       refresh: Boolean(req.body?.refresh),
-      aspect: String(req.body?.aspect ?? "16:9"),
+      aspect: req.body?.aspect === "9:16" ? "9:16" : "16:9",
     });
     const { screenshot, ...meta } = capture;
     res.json({ ...meta, screenshot: screenshot.toString("base64") });
